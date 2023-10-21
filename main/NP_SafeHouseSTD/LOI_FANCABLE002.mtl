@@ -1,0 +1,10 @@
+# Material: MATERIAL #75.np_safe~_safehouse.ufg
+# Diffuse Name: OBJ_SAFEHOUSELAMP001_D
+newmtl 0x99023DE7
+Ka 1.000000 1.000000 1.000000
+Kd 0.500000 0.500000 0.500000
+Ks 0.500000 0.500000 0.500000
+d 1.000000
+illum 0
+map_Kd ../Textures/0xF31D42F4.png
+

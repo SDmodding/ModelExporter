@@ -1,0 +1,22 @@
+# Material: LOI_PUNCHINGBAG001|3~hingbag001.ufg
+# Diffuse Name: OBJ_PUNCHINGBAG001_D
+# Specular Name: OBJ_PUNCHINGBAG001_S
+newmtl 0xC561D90F
+Ka 1.000000 1.000000 1.000000
+Kd 0.500000 0.500000 0.500000
+Ks 0.500000 0.500000 0.500000
+d 1.000000
+illum 0
+map_Kd ../Textures/0x1E5D46B0.png
+map_Ks ../Textures/0x4C0BCDC5.png
+
+# Material: OBJ_CHAIN001_D.loi_birdcage001
+# Diffuse Name: OBJ_CHAIN001_D
+newmtl 0xF602B5
+Ka 1.000000 1.000000 1.000000
+Kd 0.500000 0.500000 0.500000
+Ks 0.500000 0.500000 0.500000
+d 1.000000
+illum 0
+map_Kd ../Textures/0x2C2374B2.png
+

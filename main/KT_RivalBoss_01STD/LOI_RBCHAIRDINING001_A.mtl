@@ -1,0 +1,9 @@
+newmtl 0xCAA3AE0C
+Ka 1.000000 1.000000 1.000000
+Kd 0.500000 0.500000 0.500000
+Ks 0.500000 0.500000 0.500000
+d 1.000000
+illum 0
+map_Kd ../Textures/0xD89301B6.png
+map_Ks ../Textures/0x8AC58AC3.png
+

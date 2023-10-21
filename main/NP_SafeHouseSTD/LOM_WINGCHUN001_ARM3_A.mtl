@@ -1,0 +1,12 @@
+# Material: LOI_WINGCHUNG001_WOO~ingchun001.ufg
+# Diffuse Name: OBJ_WINGCHUNWOOD001_D
+# Specular Name: OBJ_WINGCHUNWOOD001_S
+newmtl 0xC9A8B6AB
+Ka 1.000000 1.000000 1.000000
+Kd 0.500000 0.500000 0.500000
+Ks 0.500000 0.500000 0.500000
+d 1.000000
+illum 0
+map_Kd ../Textures/0x8E3DACB7.png
+map_Ks ../Textures/0xDC6B27C2.png
+

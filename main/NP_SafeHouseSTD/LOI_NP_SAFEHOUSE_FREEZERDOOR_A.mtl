@@ -1,0 +1,22 @@
+# Material: MATERIAL #96|0|OBJ_S~_fridge001.ufg
+# Diffuse Name: OBJ_SAFEHOUSE_KITCHEN_D
+# Specular Name: OBJ_SAFEHOUSE_KITCHEN_S
+newmtl 0xFE28155
+Ka 1.000000 1.000000 1.000000
+Kd 0.500000 0.500000 0.500000
+Ks 0.500000 0.500000 0.500000
+d 1.000000
+illum 0
+map_Kd ../Textures/0x89C0BEC7.png
+map_Ks ../Textures/0xDB9635B2.png
+
+# Material: MATERIAL #96|1|OBJ_F~_fridge001.ufg
+# Diffuse Name: OBJ_FRIDGE003_D
+newmtl 0x475A0288
+Ka 1.000000 1.000000 1.000000
+Kd 0.500000 0.500000 0.500000
+Ks 0.500000 0.500000 0.500000
+d 1.000000
+illum 0
+map_Kd ../Textures/0xD8A889B9.png
+

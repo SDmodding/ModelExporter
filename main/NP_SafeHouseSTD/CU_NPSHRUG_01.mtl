@@ -1,0 +1,10 @@
+# Material: LOI_SAFEHOUSEAPT_WAL~_safehouse.ufg
+# Diffuse Name: OBJ_RUG002_D
+newmtl 0xFEDFF8C0
+Ka 1.000000 1.000000 1.000000
+Kd 0.500000 0.500000 0.500000
+Ks 0.500000 0.500000 0.500000
+d 1.000000
+illum 0
+map_Kd ../Textures/0x600E788B.png
+
