@@ -9,7 +9,7 @@
 #include "3rdParty/umHalf.h"
 
 // Defines
-#define PROJECT_VERSION		"v1.0.1"
+#define PROJECT_VERSION		"v1.0.2"
 #define PROJECT_NAME		"Model Exporter " PROJECT_VERSION
 
 // SDK Stuff
@@ -503,17 +503,18 @@ int main(int p_Argc, char** p_Argv)
 					m_MtlBase.m_Illum = 0;
 				}
 
-				Illusion::MaterialParam_t* m_Diffuse = m_Material->GetParam(0xDCE06689); // texDiffuse
+				static uint32_t m_DiffuseHashes[] =
 				{
-					if (!m_Diffuse)
-						m_Diffuse = m_Material->GetParam(0x19410F73); // texDiffuse2
-
-					if (!m_Diffuse)
-						m_Diffuse = m_Material->GetParam(0x5F95AF1); // texDiffuseWorld
-				}
-
-				if (m_Diffuse)
+					0xDCE06689, // texDiffuse
+					0x19410F73, // texDiffuse2
+					0x5F95AF1, // texDiffuseWorld
+				};
+				for (uint32_t m_DiffuseNameUID : m_DiffuseHashes)
 				{
+					Illusion::MaterialParam_t* m_Diffuse = m_Material->GetParam(m_DiffuseNameUID);
+					if (!m_Diffuse)
+						continue;
+
 					UFG::ResourceData_t* m_DiffuseResource = m_PermFile.GetResourceData(m_Diffuse->m_NameUID);
 					if (m_DiffuseResource)
 					{
@@ -526,11 +527,22 @@ int main(int p_Argc, char** p_Argv)
 						sprintf_s(m_Format, sizeof(m_Format), "../Textures/0x%X.png", m_Diffuse->m_NameUID);
 						m_MtlBase.m_MapKd = m_Format;
 					}
+
+					break;
 				}
 
-				Illusion::MaterialParam_t* m_Normal = m_Material->GetParam(0xECADC789); // texNormal
-				if (m_Normal)
+				static uint32_t m_NormalHashes[] =
 				{
+					0xECADC789, // texNormal
+					0xADBE1A5A, // texBump
+					0xA348DC23, // texBump2
+				};
+				for (uint32_t m_NormalNameUID : m_NormalHashes)
+				{
+					Illusion::MaterialParam_t* m_Normal = m_Material->GetParam(m_NormalNameUID);
+					if (!m_Normal)
+						continue;
+
 					UFG::ResourceData_t* m_NormalResource = m_PermFile.GetResourceData(m_Normal->m_NameUID);
 					if (m_NormalResource)
 					{
@@ -540,6 +552,8 @@ int main(int p_Argc, char** p_Argv)
 
 					sprintf_s(m_Format, sizeof(m_Format), "../Textures/0x%X.png", m_Normal->m_NameUID);
 					m_MtlBase.m_MapBump = m_Format;
+
+					break;
 				}
 
 				Illusion::MaterialParam_t* m_Specular = m_Material->GetParam(0xCB460EC7); // texSpecular
