@@ -9,7 +9,7 @@
 #include "3rdParty/umHalf.h"
 
 // Defines
-#define PROJECT_VERSION		"v1.0.0"
+#define PROJECT_VERSION		"v1.0.1"
 #define PROJECT_NAME		"Model Exporter " PROJECT_VERSION
 
 // SDK Stuff
@@ -812,14 +812,14 @@ int main(int p_Argc, char** p_Argv)
 
 				// Faces
 				{
-					short* m_FacesArray = &reinterpret_cast<short*>(m_IndexBuffer->GetData())[m_Mesh->m_IndexStart];
+					uint16_t* m_FacesArray = &reinterpret_cast<uint16_t*>(m_IndexBuffer->GetData())[m_Mesh->m_IndexStart];
 					for (uint32_t i = 0; m_Mesh->m_NumPrims > i; ++i)
 					{
 						switch (m_Mesh->m_PrimType)
 						{
 							case 3: // Triangles
 							{
-								short* m_Faces = &m_FacesArray[i * 3];
+								uint16_t* m_Faces = &m_FacesArray[i * 3];
 								uint32_t m_Face1 = static_cast<uint32_t>(m_Faces[0] + 1);
 								uint32_t m_Face2 = static_cast<uint32_t>(m_Faces[1] + 1);
 								uint32_t m_Face3 = static_cast<uint32_t>(m_Faces[2] + 1);

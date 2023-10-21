@@ -1,9 +1,0 @@
-newmtl 0xA40B45E4
-Ka 1.000000 1.000000 1.000000
-Kd 0.500000 0.500000 0.500000
-Ks 0.500000 0.500000 0.500000
-d 1.000000
-illum 0
-map_Kd ../Textures/0x3B008149.png
-map_Ks ../Textures/0x69560A3C.png
-
