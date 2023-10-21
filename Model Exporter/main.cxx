@@ -509,7 +509,7 @@ int main(int p_Argc, char** p_Argv)
 						m_Diffuse = m_Material->GetParam(0x19410F73); // texDiffuse2
 
 					if (!m_Diffuse)
-						m_Diffuse = m_Material->GetParam(0x5F95AF1); // texDiffuse2
+						m_Diffuse = m_Material->GetParam(0x5F95AF1); // texDiffuseWorld
 				}
 
 				if (m_Diffuse)
