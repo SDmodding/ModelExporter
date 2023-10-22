@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <array>
+#include <algorithm>
 #include <iostream>
 #include <Windows.h>
 #include <string>
@@ -9,13 +10,14 @@
 #include "3rdParty/umHalf.h"
 
 // Defines
-#define PROJECT_VERSION		"v1.0.2"
+#define PROJECT_VERSION		"v1.0.3"
 #define PROJECT_NAME		"Model Exporter " PROJECT_VERSION
 
 // SDK Stuff
 #define UFG_PAD_INSERT(x, y) x ## y
 #define UFG_PAD_DEFINE(x, y) UFG_PAD_INSERT(x, y)
 #define UFG_PAD(size) char UFG_PAD_DEFINE(padding_, __LINE__)[size] = { 0x0 }
+#include <SDK/Optional/StringHash.hpp>
 
 namespace UFG
 {
@@ -340,6 +342,48 @@ namespace Helper
 
 		return m_OpenFileName.lpstrFile;
 	}
+
+	namespace TextureFiles
+	{
+		std::unordered_map<uint32_t, std::string> m_Map;
+		void Initialize(std::string p_Path)
+		{
+			std::vector<std::string> m_SupportedExtensions = { ".JPG", ".JPEG", ".PNG", ".TIFF", ".TIF", ".BMP", ".TGA", ".GIF", ".HDR", ".EXR", ".DDS" };
+			try
+			{
+				for (auto& m_Entry : std::filesystem::directory_iterator(p_Path))
+				{
+					if (!m_Entry.is_regular_file())
+						continue;
+
+					std::string m_Extension = m_Entry.path().extension().string();
+					std::transform(m_Extension.begin(), m_Extension.end(), m_Extension.begin(), ::toupper);
+
+					if (std::find(m_SupportedExtensions.begin(), m_SupportedExtensions.end(), m_Extension) == m_SupportedExtensions.end())
+						continue;
+
+					std::string m_TextureName = m_Entry.path().stem().string();
+					m_Map[SDK::StringHashUpper32(&m_TextureName[0])] = m_Entry.path().filename().string();
+				}
+			}
+			catch (...)
+			{
+				printf("[ WARNING ] Failed to fetch texture files because 'directory_iterator' got IO Error.!\n");
+			}
+
+			if (m_Map.size())
+				printf("[ ~ ] Found %zu textures in output folder.\n", m_Map.size());
+		}
+
+		std::string TryGet(uint32_t p_NameUID)
+		{
+			auto m_Find = m_Map.find(p_NameUID);
+			if (m_Find == m_Map.end())
+				return "";
+
+			return (*m_Find).second;
+		}
+	}
 }
 
 int g_Argc = 0;
@@ -459,6 +503,8 @@ int main(int p_Argc, char** p_Argv)
 		std::filesystem::create_directory(m_OutputDir);
 	}
 
+	Helper::TextureFiles::Initialize(m_OutputDir);
+
 	size_t m_ModelIndex = 0;
 	size_t m_ModelsExported = 0;
 
@@ -503,17 +549,50 @@ int main(int p_Argc, char** p_Argv)
 					m_MtlBase.m_Illum = 0;
 				}
 
-				static uint32_t m_DiffuseHashes[] =
+				enum eMapType : uint8_t
 				{
-					0xDCE06689, // texDiffuse
-					0x19410F73, // texDiffuse2
-					0x5F95AF1, // texDiffuseWorld
+					eMapType_Diffuse,
+					eMapType_Bump,
+					eMapType_Specular
 				};
-				for (uint32_t m_DiffuseNameUID : m_DiffuseHashes)
+
+				static std::vector<std::vector<uint32_t>> m_TextureMapUIDs =
 				{
-					Illusion::MaterialParam_t* m_Diffuse = m_Material->GetParam(m_DiffuseNameUID);
+					// Diffuse
+					{ 
+						0xDCE06689, // texDiffuse 
+						0x19410F73, // texDiffuse2
+						0x5F95AF1	// texDiffuseWorld
+					},
+					// Bump
+					{
+						0xECADC789, // texNormal
+						0xADBE1A5A, // texBump
+						0xA348DC23, // texBump2
+					},
+					// Specular
+					{
+						0xCB460EC7, // texSpecular
+						0xED7FCA06	// texSpecular2
+					}
+				};
+
+				// Diffuse
+				for (uint32_t m_NameUID : m_TextureMapUIDs[eMapType_Diffuse])
+				{
+					Illusion::MaterialParam_t* m_Diffuse = m_Material->GetParam(m_NameUID);
 					if (!m_Diffuse)
 						continue;
+
+					if (Helper::GetTextureColor(m_Diffuse->m_NameUID, m_MtlBase.m_Kd))
+						continue; // The texture would use one pixel color so we don't include it...
+
+					m_MtlBase.m_MapKd = Helper::TextureFiles::TryGet(m_Diffuse->m_NameUID);
+					if (!m_MtlBase.m_MapKd.empty())
+					{
+						printf("\t\t\tDiffuse: %s\n", &m_MtlBase.m_MapKd[0]);
+						break;
+					}
 
 					UFG::ResourceData_t* m_DiffuseResource = m_PermFile.GetResourceData(m_Diffuse->m_NameUID);
 					if (m_DiffuseResource)
@@ -522,43 +601,51 @@ int main(int p_Argc, char** p_Argv)
 						fprintf(m_MtlFile, "# Diffuse Name: %s\n", m_DiffuseResource->m_DebugName);
 					}
 
-					if (!Helper::GetTextureColor(m_Diffuse->m_NameUID, m_MtlBase.m_Kd))
-					{
-						sprintf_s(m_Format, sizeof(m_Format), "../Textures/0x%X.png", m_Diffuse->m_NameUID);
-						m_MtlBase.m_MapKd = m_Format;
-					}
-
+					sprintf_s(m_Format, sizeof(m_Format), "../Textures/0x%X.png", m_Diffuse->m_NameUID);
+					m_MtlBase.m_MapKd = m_Format;
 					break;
 				}
 
-				static uint32_t m_NormalHashes[] =
+				// Bump
+				for (uint32_t m_NameUID : m_TextureMapUIDs[eMapType_Bump])
 				{
-					0xECADC789, // texNormal
-					0xADBE1A5A, // texBump
-					0xA348DC23, // texBump2
-				};
-				for (uint32_t m_NormalNameUID : m_NormalHashes)
-				{
-					Illusion::MaterialParam_t* m_Normal = m_Material->GetParam(m_NormalNameUID);
-					if (!m_Normal)
+					Illusion::MaterialParam_t* m_Bump = m_Material->GetParam(m_NameUID);
+					if (!m_Bump)
 						continue;
 
-					UFG::ResourceData_t* m_NormalResource = m_PermFile.GetResourceData(m_Normal->m_NameUID);
+					m_MtlBase.m_MapBump = Helper::TextureFiles::TryGet(m_Bump->m_NameUID);
+					if (!m_MtlBase.m_MapBump.empty())
+					{
+						printf("\t\t\tBump: %s\n", &m_MtlBase.m_MapBump[0]);
+						break;
+					}
+					
+					UFG::ResourceData_t* m_NormalResource = m_PermFile.GetResourceData(m_Bump->m_NameUID);
 					if (m_NormalResource)
 					{
-						printf("\t\t\tNormal: %s\n", m_NormalResource->m_DebugName);
-						fprintf(m_MtlFile, "# Normal Name: %s\n", m_NormalResource->m_DebugName);
+						printf("\t\t\tBump: %s\n", m_NormalResource->m_DebugName);
+						fprintf(m_MtlFile, "# Bump Name: %s\n", m_NormalResource->m_DebugName);
 					}
 
-					sprintf_s(m_Format, sizeof(m_Format), "../Textures/0x%X.png", m_Normal->m_NameUID);
+					sprintf_s(m_Format, sizeof(m_Format), "../Textures/0x%X.png", m_Bump->m_NameUID);
 					m_MtlBase.m_MapBump = m_Format;
-
 					break;
 				}
 
-				Illusion::MaterialParam_t* m_Specular = m_Material->GetParam(0xCB460EC7); // texSpecular
-				if (m_Specular)
+				// Specular
+				for (uint32_t m_NameUID : m_TextureMapUIDs[eMapType_Specular])
 				{
+					Illusion::MaterialParam_t* m_Specular = m_Material->GetParam(m_NameUID);
+					if (!m_Specular)
+						continue;
+
+					m_MtlBase.m_MapKs = Helper::TextureFiles::TryGet(m_Specular->m_NameUID);
+					if (!m_MtlBase.m_MapKs.empty())
+					{
+						printf("\t\t\tSpecular: %s\n", &m_MtlBase.m_MapKs[0]);
+						break;
+					}
+
 					UFG::ResourceData_t* m_SpecularResource = m_PermFile.GetResourceData(m_Specular->m_NameUID);
 					if (m_SpecularResource)
 					{
@@ -568,6 +655,7 @@ int main(int p_Argc, char** p_Argv)
 
 					sprintf_s(m_Format, sizeof(m_Format), "../Textures/0x%X.png", m_Specular->m_NameUID);
 					m_MtlBase.m_MapKs = m_Format;
+					break;
 				}
 
 				m_MtlBase.WriteToFile(m_MtlFile);
