@@ -18,237 +18,8 @@
 #define UFG_PAD_INSERT(x, y) x ## y
 #define UFG_PAD_DEFINE(x, y) UFG_PAD_INSERT(x, y)
 #define UFG_PAD(size) char UFG_PAD_DEFINE(padding_, __LINE__)[size] = { 0x0 }
+#include <SDK/Optional/PermFile/.Includes.hpp>
 #include <SDK/Optional/StringHash.hpp>
-
-namespace UFG
-{
-	struct ResourceData_t
-	{
-		uint32_t m_TypeUID = 0x0;
-		uint32_t m_EntrySize[2] = { 0x0, 0x0 };
-		uint32_t m_Offset = 0x0;
-
-		UFG_PAD(0x18);
-
-		uint32_t m_NameUID = 0x0;
-
-		UFG_PAD(0x14);
-
-		uint32_t m_ChunkUID = 0x0;
-
-		char m_DebugName[36];
-	};
-}
-
-namespace Illusion
-{
-	struct Buffer_t : UFG::ResourceData_t
-	{
-		uint32_t m_Type = 0x0;
-		uint32_t m_Size = 0x0;
-		uint64_t m_DataOffset = 0xD0;
-		uint32_t m_ElementSize = 0x0;
-		uint32_t m_NumElements = 0x0;
-
-		uint8_t m_BufferPadding[192] = {
-			0xA0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x4D, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC6, 0x42,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x42, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x30, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-		};
-
-		void* GetData()
-		{
-			return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(&m_DataOffset) + m_DataOffset);
-		}
-	};
-
-	struct Mesh_t
-	{
-		struct Handle_t
-		{
-			UFG_PAD(0x18);
-
-			uint32_t m_NameUID = 0x0;
-
-			UFG_PAD(0x4);
-		};
-
-		Handle_t m_MaterialHandle;
-		Handle_t m_VertexDeclHandle;
-		Handle_t m_IndexBufferHandle;
-		Handle_t m_VertexBufferHandles[4];
-		int m_PrimType = 0;
-		int m_IndexStart = 0;
-		uint32_t m_NumPrims = 0;
-		uint32_t m_Pad = 0;
-		const char* m_Description = nullptr;
-	};
-
-	struct MaterialParam_t
-	{
-		struct StateParam_t
-		{
-			uint32_t m_NameUID;
-			uint32_t m_TypeUID;
-			uint16_t m_ParamIndex;
-
-			UFG_PAD(0x2);
-		};
-
-		StateParam_t m_StateParam;
-
-		UFG_PAD(0x1C);
-
-		uint32_t m_NameUID;
-
-		UFG_PAD(0x4);
-
-		uint32_t m_TypeUID;
-
-		UFG_PAD(0x4);
-	};
-
-	struct MaterialUser_t
-	{
-		uint16_t m_VisibilityFlags = 0x1F;
-		uint16_t mShadowFlags = 0x0;
-		uint8_t m_Align[12] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-	};
-
-	struct Material_t : UFG::ResourceData_t
-	{
-		UFG_PAD(0x8);
-
-		uint64_t m_StateBlockMask[2] = { 0x0, 0x0 };
-		uint32_t m_NumParams;
-
-		UFG_PAD(0x4);
-
-		uint64_t m_MaterialUserOffset = 0;
-
-		MaterialParam_t* GetParam(uint32_t p_NameUID)
-		{
-			MaterialParam_t* m_ParamTable = reinterpret_cast<MaterialParam_t*>(reinterpret_cast<uintptr_t>(this) + sizeof(Material_t));
-			for (uint32_t i = 0; m_NumParams > i; ++i)
-			{
-				MaterialParam_t* m_Param = &m_ParamTable[i];
-				if (m_Param->m_StateParam.m_NameUID == p_NameUID)
-					return m_Param;
-			}
-
-			return nullptr;
-		}
-	};
-
-	struct Model_t : UFG::ResourceData_t
-	{
-		float m_AABBMin[3];
-		uint32_t m_NumPrims;
-		float m_AABBMax[3];
-
-		UFG_PAD(0x44);
-
-		uint64_t m_MeshOffset;
-		uint32_t m_NumMeshes;
-
-		Mesh_t* GetMesh(uint32_t p_Index)
-		{
-			uintptr_t* m_TableOffset = reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(&m_MeshOffset) + m_MeshOffset);
-			uintptr_t m_MeshTable = (reinterpret_cast<uintptr_t>(m_TableOffset) + *m_TableOffset);
-			return reinterpret_cast<Mesh_t*>(m_MeshTable + (static_cast<uintptr_t>(p_Index) * 0x110));
-		}
-	};
-}
-
-// Actual Project
-struct PermFile_t
-{
-	uint8_t* m_Data = nullptr;
-	size_t m_Size = 0;
-
-	std::string m_Name;
-	std::vector<UFG::ResourceData_t*> m_Resources;
-
-	~PermFile_t()
-	{
-		if (m_Data)
-			delete[] m_Data;
-	}
-
-	PermFile_t() { }
-
-	UFG::ResourceData_t* GetResourceData(uint32_t p_NameUID)
-	{
-		for (UFG::ResourceData_t* m_ResourceData : m_Resources)
-		{
-			if (m_ResourceData->m_NameUID == p_NameUID)
-				return m_ResourceData;
-		}
-		
-		return nullptr;
-	}
-
-	void ParseData()
-	{
-		size_t m_Offset = 0;
-		while (m_Size > m_Offset)
-		{
-			UFG::ResourceData_t* m_ResourceData = reinterpret_cast<UFG::ResourceData_t*>(&m_Data[m_Offset]);
-			if (m_ResourceData->m_TypeUID && m_ResourceData->m_EntrySize[0])
-			{
-				if (m_ResourceData->m_Offset)
-				{
-					UFG::ResourceData_t* m_ResourceDataOffset = reinterpret_cast<UFG::ResourceData_t*>(&m_Data[m_Offset + m_ResourceData->m_Offset]);
-					m_Resources.emplace_back(m_ResourceDataOffset);
-				}
-				else
-					m_Resources.emplace_back(m_ResourceData);
-			}
-
-			m_Offset += static_cast<size_t>(m_ResourceData->m_EntrySize[0]) + 0x10;
-		}
-	}
-
-	bool LoadFile(const char* p_FilePath)
-	{
-		FILE* m_File = fopen(p_FilePath, "rb");
-		if (!m_File)
-			return false;
-
-		m_Name = std::filesystem::path(p_FilePath).filename().string();
-		m_Name = m_Name.substr(0, m_Name.find_first_of('.'));
-
-		fseek(m_File, 0, SEEK_END);
-
-		m_Size = static_cast<size_t>(ftell(m_File));
-		m_Data = new uint8_t[m_Size];
-
-		fseek(m_File, 0, SEEK_SET);
-
-		size_t m_ReadRes = fread(m_Data, 1, m_Size, m_File);
-
-		fclose(m_File);
-
-		if (m_ReadRes != m_Size)
-			return false;
-
-		ParseData();
-		return true;
-	}
-};
 
 struct MtlFile_t
 {
@@ -465,7 +236,7 @@ int main(int p_Argc, char** p_Argv)
 		return 1;
 	}
 
-	PermFile_t m_PermFile;
+	SDK::PermFile_t m_PermFile;
 	if (!m_PermFile.LoadFile(&m_PermPath[0]))
 	{
 		printf("[ ERROR ] Failed to load perm file!\n"); ReturnKeyWait();
@@ -478,13 +249,13 @@ int main(int p_Argc, char** p_Argv)
 		return 1;
 	}
 
-	std::vector<Illusion::Model_t*> m_Models;
-	for (UFG::ResourceData_t* m_ResourceData : m_PermFile.m_Resources)
+	std::vector<Illusion::ModelData_t*> m_Models;
+	for (UFG::ResourceEntry_t* m_Resource : m_PermFile.m_Resources)
 	{
-		if (m_ResourceData->m_TypeUID != 0x6DF963B3) // Is 'ModelData'?
+		if (m_Resource->m_TypeUID != 0x6DF963B3) // Is 'ModelData'?
 			continue;
 
-		m_Models.emplace_back(reinterpret_cast<Illusion::Model_t*>(m_ResourceData));
+		m_Models.emplace_back(reinterpret_cast<Illusion::ModelData_t*>(m_Resource->GetData()));
 	}
 
 	if (m_Models.empty())
@@ -509,23 +280,23 @@ int main(int p_Argc, char** p_Argv)
 	size_t m_ModelIndex = 0;
 	size_t m_ModelsExported = 0;
 
-	for (Illusion::Model_t* m_Model : m_Models)
+	for (Illusion::ModelData_t* m_ModelData : m_Models)
 	{
 		++m_ModelIndex;
-		if (!m_Model->m_NumMeshes)
+		if (!m_ModelData->m_NumMeshes)
 			continue; // What the fuck?
 
-		printf("\n[%zu/%zu] Exporting: %s\n", m_ModelIndex, m_Models.size(), m_Model->m_DebugName);
-		printf("\tNumMeshes: %u\n", m_Model->m_NumMeshes);
+		printf("\n[%zu/%zu] Exporting: %s\n", m_ModelIndex, m_Models.size(), m_ModelData->m_DebugName);
+		printf("\tNumMeshes: %u\n", m_ModelData->m_NumMeshes);
 
-		std::string m_MtlFilePath = (m_OutputDir + "\\" + m_Model->m_DebugName + ".mtl");
+		std::string m_MtlFilePath = (m_OutputDir + "\\" + m_ModelData->m_DebugName + ".mtl");
 		FILE* m_MtlFile = fopen(&m_MtlFilePath[0], "w");
 		if (m_MtlFile)
 		{
-			for (uint32_t m = 0; m_Model->m_NumMeshes > m; ++m)
+			for (uint32_t m = 0; m_ModelData->m_NumMeshes > m; ++m)
 			{
-				Illusion::Mesh_t* m_Mesh = m_Model->GetMesh(m);
-				Illusion::Material_t* m_Material = reinterpret_cast<Illusion::Material_t*>(m_PermFile.GetResourceData(m_Mesh->m_MaterialHandle.m_NameUID));
+				Illusion::Mesh_t* m_Mesh = m_ModelData->GetMesh(m);
+				Illusion::Material_t* m_Material = reinterpret_cast<Illusion::Material_t*>(m_PermFile.GetResourceDataByName(m_Mesh->m_MaterialHandle.m_NameUID));
 
 				if (!m_Material)
 				{
@@ -591,7 +362,7 @@ int main(int p_Argc, char** p_Argv)
 						break;
 					}
 
-					UFG::ResourceData_t* m_DiffuseResource = m_PermFile.GetResourceData(m_Diffuse->m_NameUID);
+					UFG::ResourceData_t* m_DiffuseResource = m_PermFile.GetResourceDataByName(m_Diffuse->m_NameUID);
 					if (m_DiffuseResource)
 					{
 						printf("\t\t\tDiffuse: %s\n", m_DiffuseResource->m_DebugName);
@@ -617,7 +388,7 @@ int main(int p_Argc, char** p_Argv)
 						break;
 					}
 					
-					UFG::ResourceData_t* m_NormalResource = m_PermFile.GetResourceData(m_Bump->m_NameUID);
+					UFG::ResourceData_t* m_NormalResource = m_PermFile.GetResourceDataByName(m_Bump->m_NameUID);
 					if (m_NormalResource)
 					{
 						printf("\t\t\tBump: %s\n", m_NormalResource->m_DebugName);
@@ -643,7 +414,7 @@ int main(int p_Argc, char** p_Argv)
 						break;
 					}
 
-					UFG::ResourceData_t* m_SpecularResource = m_PermFile.GetResourceData(m_Specular->m_NameUID);
+					UFG::ResourceData_t* m_SpecularResource = m_PermFile.GetResourceDataByName(m_Specular->m_NameUID);
 					if (m_SpecularResource)
 					{
 						printf("\t\t\tSpecular: %s\n", m_SpecularResource->m_DebugName);
@@ -662,24 +433,24 @@ int main(int p_Argc, char** p_Argv)
 			fclose(m_MtlFile);
 		}
 
-		std::string m_ObjFilePath = (m_OutputDir + "\\" + m_Model->m_DebugName + ".obj");
+		std::string m_ObjFilePath = (m_OutputDir + "\\" + m_ModelData->m_DebugName + ".obj");
 		FILE* m_ObjFile = fopen(&m_ObjFilePath[0], "w");
 		if (m_ObjFile)
 		{
 			fprintf(m_ObjFile, "# %s\n# https://github.com/SDmodding/ModelExporter\n", PROJECT_NAME);
-			fprintf(m_ObjFile, "mtllib %s.mtl\n", m_Model->m_DebugName);
+			fprintf(m_ObjFile, "mtllib %s.mtl\n", m_ModelData->m_DebugName);
 			fprintf(m_ObjFile, "s 1\n");
 
 			uint32_t m_VertexIndex = 0;
 			uint32_t m_UVIndex = 0;
 			uint32_t m_NormalIndex = 0;
-			for (uint32_t m = 0; m_Model->m_NumMeshes > m; ++m)
+			for (uint32_t m = 0; m_ModelData->m_NumMeshes > m; ++m)
 			{
-				Illusion::Mesh_t* m_Mesh = m_Model->GetMesh(m);
-				Illusion::Material_t* m_Material	= reinterpret_cast<Illusion::Material_t*>(m_PermFile.GetResourceData(m_Mesh->m_MaterialHandle.m_NameUID));
-				Illusion::Buffer_t* m_IndexBuffer	= reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceData(m_Mesh->m_IndexBufferHandle.m_NameUID));
-				Illusion::Buffer_t* m_VertexBuffer	= reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceData(m_Mesh->m_VertexBufferHandles[0].m_NameUID));
-				Illusion::Buffer_t* m_UVBuffer		= reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceData(m_Mesh->m_VertexBufferHandles[1].m_NameUID));
+				Illusion::Mesh_t* m_Mesh = m_ModelData->GetMesh(m);
+				Illusion::Material_t* m_Material	= reinterpret_cast<Illusion::Material_t*>(m_PermFile.GetResourceDataByName(m_Mesh->m_MaterialHandle.m_NameUID));
+				Illusion::Buffer_t* m_IndexBuffer	= reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceDataByName(m_Mesh->m_IndexBufferHandle.m_NameUID));
+				Illusion::Buffer_t* m_VertexBuffer	= reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceDataByName(m_Mesh->m_VertexBufferHandles[0].m_NameUID));
+				Illusion::Buffer_t* m_UVBuffer		= reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceDataByName(m_Mesh->m_VertexBufferHandles[1].m_NameUID));
 
 				if (!m_IndexBuffer || !m_VertexBuffer || !m_UVBuffer)
 				{
@@ -713,14 +484,14 @@ int main(int p_Argc, char** p_Argv)
 					{
 						m_VertexDecl = eVertexDecl_Skinned;
 						if (m_UVBuffer->m_ElementSize != 0x4)
-							m_UVBuffer = reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceData(m_Mesh->m_VertexBufferHandles[2].m_NameUID));
+							m_UVBuffer = reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceDataByName(m_Mesh->m_VertexBufferHandles[2].m_NameUID));
 					}
 					break;
 					case 0xE234EF7A: 
 					{
 						m_VertexDecl = eVertexDecl_VehicleUVNTC;
 						if (m_UVBuffer->m_ElementSize != 0x4)
-							m_UVBuffer = reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceData(m_Mesh->m_VertexBufferHandles[2].m_NameUID));
+							m_UVBuffer = reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceDataByName(m_Mesh->m_VertexBufferHandles[2].m_NameUID));
 					}
 					break;
 					case 0x7E0D7533: m_VertexDecl = eVertexDecl_SlimUV; break;
@@ -728,7 +499,7 @@ int main(int p_Argc, char** p_Argv)
 					{
 						m_VertexDecl = eVertexDecl_SkinnedUVNT;
 						if (m_UVBuffer->m_ElementSize != 0x4)
-							m_UVBuffer = reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceData(m_Mesh->m_VertexBufferHandles[2].m_NameUID));
+							m_UVBuffer = reinterpret_cast<Illusion::Buffer_t*>(m_PermFile.GetResourceDataByName(m_Mesh->m_VertexBufferHandles[2].m_NameUID));
 					}
 					break;
 				}
@@ -739,7 +510,7 @@ int main(int p_Argc, char** p_Argv)
 					continue; // Unsupported Decl
 				}
 
-				fprintf(m_ObjFile, "o %s_%u\n", m_Model->m_DebugName, m);
+				fprintf(m_ObjFile, "o %s_%u\n", m_ModelData->m_DebugName, m);
 				if (m_Material)
 					fprintf(m_ObjFile, "usemtl %s\n", m_Material->m_DebugName);
 				else
