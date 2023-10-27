@@ -11,7 +11,7 @@
 #include "3rdParty/umHalf.h"
 
 // Defines
-#define PROJECT_VERSION		"v1.0.5"
+#define PROJECT_VERSION		"v1.0.4"
 #define PROJECT_NAME		"Model Exporter " PROJECT_VERSION
 
 // SDK Stuff
