@@ -7,10 +7,11 @@
 #include <filesystem>
 #include <unordered_map>
 
+//#include "ColladaFile.hxx"
 #include "3rdParty/umHalf.h"
 
 // Defines
-#define PROJECT_VERSION		"v1.0.3"
+#define PROJECT_VERSION		"v1.0.5"
 #define PROJECT_NAME		"Model Exporter " PROJECT_VERSION
 
 // SDK Stuff
@@ -534,19 +535,14 @@ int main(int p_Argc, char** p_Argv)
 
 				printf("\t\t[ Material ] %s\n", m_Material->m_DebugName);
 
-				fprintf(m_MtlFile, "# Material: %s\n", m_Material->m_DebugName);
-
-				char m_Format[256];
-				sprintf_s(m_Format, sizeof(m_Format), "0x%X", m_Material->m_NameUID);
-
 				MtlFile_t m_MtlBase;
 				{
-					m_MtlBase.m_Name = m_Format;
+					m_MtlBase.m_Name = m_Material->m_DebugName;
 					m_MtlBase.m_Ka[0] = m_MtlBase.m_Ka[1] = m_MtlBase.m_Ka[2] = 1.f;
 					m_MtlBase.m_Kd[0] = m_MtlBase.m_Kd[1] = m_MtlBase.m_Kd[2] = 0.5f;
 					m_MtlBase.m_Ks[0] = m_MtlBase.m_Ks[1] = m_MtlBase.m_Ks[2] = 0.5f;
 					m_MtlBase.m_D = 1.f;
-					m_MtlBase.m_Illum = 0;
+					m_MtlBase.m_Illum = 1;
 				}
 
 				enum eMapType : uint8_t
@@ -576,6 +572,7 @@ int main(int p_Argc, char** p_Argv)
 						0xED7FCA06	// texSpecular2
 					}
 				};
+				char m_TexturePath[256];
 
 				// Diffuse
 				for (uint32_t m_NameUID : m_TextureMapUIDs[eMapType_Diffuse])
@@ -601,8 +598,8 @@ int main(int p_Argc, char** p_Argv)
 						fprintf(m_MtlFile, "# Diffuse Name: %s\n", m_DiffuseResource->m_DebugName);
 					}
 
-					sprintf_s(m_Format, sizeof(m_Format), "../Textures/0x%X.png", m_Diffuse->m_NameUID);
-					m_MtlBase.m_MapKd = m_Format;
+					sprintf_s(m_TexturePath, sizeof(m_TexturePath), "../Textures/0x%X.png", m_Diffuse->m_NameUID);
+					m_MtlBase.m_MapKd = m_TexturePath;
 					break;
 				}
 
@@ -627,8 +624,8 @@ int main(int p_Argc, char** p_Argv)
 						fprintf(m_MtlFile, "# Bump Name: %s\n", m_NormalResource->m_DebugName);
 					}
 
-					sprintf_s(m_Format, sizeof(m_Format), "../Textures/0x%X.png", m_Bump->m_NameUID);
-					m_MtlBase.m_MapBump = m_Format;
+					sprintf_s(m_TexturePath, sizeof(m_TexturePath), "../Textures/0x%X.png", m_Bump->m_NameUID);
+					m_MtlBase.m_MapBump = m_TexturePath;
 					break;
 				}
 
@@ -653,8 +650,8 @@ int main(int p_Argc, char** p_Argv)
 						fprintf(m_MtlFile, "# Specular Name: %s\n", m_SpecularResource->m_DebugName);
 					}
 
-					sprintf_s(m_Format, sizeof(m_Format), "../Textures/0x%X.png", m_Specular->m_NameUID);
-					m_MtlBase.m_MapKs = m_Format;
+					sprintf_s(m_TexturePath, sizeof(m_TexturePath), "../Textures/0x%X.png", m_Specular->m_NameUID);
+					m_MtlBase.m_MapKs = m_TexturePath;
 					break;
 				}
 
@@ -669,6 +666,7 @@ int main(int p_Argc, char** p_Argv)
 		FILE* m_ObjFile = fopen(&m_ObjFilePath[0], "w");
 		if (m_ObjFile)
 		{
+			fprintf(m_ObjFile, "# %s\n# https://github.com/SDmodding/ModelExporter\n", PROJECT_NAME);
 			fprintf(m_ObjFile, "mtllib %s.mtl\n", m_Model->m_DebugName);
 			fprintf(m_ObjFile, "s 1\n");
 
@@ -743,7 +741,9 @@ int main(int p_Argc, char** p_Argv)
 
 				fprintf(m_ObjFile, "o %s_%u\n", m_Model->m_DebugName, m);
 				if (m_Material)
-					fprintf(m_ObjFile, "usemtl 0x%X\n", m_Material->m_NameUID);
+					fprintf(m_ObjFile, "usemtl %s\n", m_Material->m_DebugName);
+				else
+					fprintf(m_ObjFile, "usemtl\n");
 
 				uintptr_t m_VertexData = reinterpret_cast<uintptr_t>(m_VertexBuffer->GetData());
 				uintptr_t m_UVData = reinterpret_cast<uintptr_t>(m_UVBuffer->GetData());
