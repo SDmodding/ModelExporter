@@ -173,7 +173,7 @@ namespace Helper
 			{
 				auto m_Find = m_TextureMap.find(p_NameUID);
 				if (m_Find != m_TextureMap.end())
-					return (*m_Find).second;
+					return (p_FileName + "\\" + (*m_Find).second);
 			}
 
 			// Find in every map...
@@ -181,7 +181,12 @@ namespace Helper
 			{
 				auto m_Find = m_Pair.second.find(p_NameUID);
 				if (m_Find != m_Pair.second.end())
-					return (*m_Find).second;
+				{
+					if (m_Pair.first.empty())
+						return (*m_Find).second;
+
+					return (m_Pair.first + "\\" + (*m_Find).second);
+				}
 			}
 
 			return "";
