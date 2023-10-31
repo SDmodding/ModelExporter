@@ -1,4 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
+#include "3rdParty/umHalf.h"
+
 #include <array>
 #include <algorithm>
 #include <iostream>
@@ -8,10 +10,9 @@
 #include <unordered_map>
 
 //#include "ColladaFile.hxx"
-#include "3rdParty/umHalf.h"
 
 // Defines
-#define PROJECT_VERSION		"v1.0.4"
+#define PROJECT_VERSION		"v1.0.5"
 #define PROJECT_NAME		"Model Exporter " PROJECT_VERSION
 
 // SDK Stuff
@@ -117,14 +118,27 @@ namespace Helper
 
 	namespace TextureFiles
 	{
-		std::unordered_map<uint32_t, std::string> m_Map;
-		void Initialize(std::string p_Path)
+		std::unordered_map<std::string, std::unordered_map<uint32_t, std::string>> m_Map;
+		std::vector<std::string> m_SupportedExtensions = { ".JPG", ".JPEG", ".PNG", ".TIFF", ".TIF", ".BMP", ".TGA", ".GIF", ".HDR", ".EXR", ".DDS" };
+
+		void ItterFolder(std::string p_Path, std::string p_Folder)
 		{
-			std::vector<std::string> m_SupportedExtensions = { ".JPG", ".JPEG", ".PNG", ".TIFF", ".TIF", ".BMP", ".TGA", ".GIF", ".HDR", ".EXR", ".DDS" };
+			std::unordered_map<uint32_t, std::string>& m_TextureMap = m_Map[p_Folder];
+			std::string m_Path = p_Path;
+			if (!p_Folder.empty())
+				m_Path += "\\" + p_Folder;
+
 			try
 			{
-				for (auto& m_Entry : std::filesystem::directory_iterator(p_Path))
+				for (auto& m_Entry : std::filesystem::directory_iterator(m_Path))
 				{
+					if (m_Entry.is_directory())
+					{
+						if (p_Folder.empty())
+							ItterFolder(p_Path, m_Entry.path().filename().string());
+						continue;
+					}
+
 					if (!m_Entry.is_regular_file())
 						continue;
 
@@ -135,25 +149,42 @@ namespace Helper
 						continue;
 
 					std::string m_TextureName = m_Entry.path().stem().string();
-					m_Map[SDK::StringHashUpper32(&m_TextureName[0])] = m_Entry.path().filename().string();
+					m_TextureMap[SDK::StringHashUpper32(&m_TextureName[0])] = m_Entry.path().filename().string();
 				}
 			}
 			catch (...)
 			{
-				printf("[ WARNING ] Failed to fetch texture files because 'directory_iterator' got IO Error.!\n");
+				// Retard...
 			}
+		}
+
+		void Initialize(std::string p_Path)
+		{
+			ItterFolder(p_Path, "");
 
 			if (m_Map.size())
 				printf("[ ~ ] Found %zu textures in output folder.\n", m_Map.size());
 		}
 
-		std::string TryGet(uint32_t p_NameUID)
+		std::string TryGet(std::string p_FileName, uint32_t p_NameUID)
 		{
-			auto m_Find = m_Map.find(p_NameUID);
-			if (m_Find == m_Map.end())
-				return "";
+			// Find based on filename first...
+			std::unordered_map<uint32_t, std::string>& m_TextureMap = m_Map[p_FileName];
+			{
+				auto m_Find = m_TextureMap.find(p_NameUID);
+				if (m_Find != m_TextureMap.end())
+					return (*m_Find).second;
+			}
 
-			return (*m_Find).second;
+			// Find in every map...
+			for (auto& m_Pair : m_Map)
+			{
+				auto m_Find = m_Pair.second.find(p_NameUID);
+				if (m_Find != m_Pair.second.end())
+					return (*m_Find).second;
+			}
+
+			return "";
 		}
 	}
 }
@@ -355,7 +386,7 @@ int main(int p_Argc, char** p_Argv)
 					if (Helper::GetTextureColor(m_Diffuse->m_NameUID, m_MtlBase.m_Kd))
 						continue; // The texture would use one pixel color so we don't include it...
 
-					m_MtlBase.m_MapKd = Helper::TextureFiles::TryGet(m_Diffuse->m_NameUID);
+					m_MtlBase.m_MapKd = Helper::TextureFiles::TryGet(m_PermFile.m_Name, m_Diffuse->m_NameUID);
 					if (!m_MtlBase.m_MapKd.empty())
 					{
 						printf("\t\t\tDiffuse: %s\n", &m_MtlBase.m_MapKd[0]);
@@ -381,7 +412,7 @@ int main(int p_Argc, char** p_Argv)
 					if (!m_Bump)
 						continue;
 
-					m_MtlBase.m_MapBump = Helper::TextureFiles::TryGet(m_Bump->m_NameUID);
+					m_MtlBase.m_MapBump = Helper::TextureFiles::TryGet(m_PermFile.m_Name, m_Bump->m_NameUID);
 					if (!m_MtlBase.m_MapBump.empty())
 					{
 						printf("\t\t\tBump: %s\n", &m_MtlBase.m_MapBump[0]);
@@ -407,7 +438,7 @@ int main(int p_Argc, char** p_Argv)
 					if (!m_Specular)
 						continue;
 
-					m_MtlBase.m_MapKs = Helper::TextureFiles::TryGet(m_Specular->m_NameUID);
+					m_MtlBase.m_MapKs = Helper::TextureFiles::TryGet(m_PermFile.m_Name, m_Specular->m_NameUID);
 					if (!m_MtlBase.m_MapKs.empty())
 					{
 						printf("\t\t\tSpecular: %s\n", &m_MtlBase.m_MapKs[0]);
