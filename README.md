@@ -1,3 +1,6 @@
+> [!WARNING]  
+> This project is deprecated. Please use **[PermToFBX](https://github.com/SDmodding/PermToFBX)** instead.
+
 # Model Exporter
 This is primitve model exporter that takes `.perm.bin` file and export models & materials to `.obj` & `.mtl` files.
 
